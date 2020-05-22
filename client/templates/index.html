@@ -62,11 +62,15 @@ Try Google Chrome, perhaps.
 </script>
 </head>
 <body>
-<a href="https://bitbucket.org/grumdrig/asciicam">[code]</a>
+
 <div id="outer">
+    <div id="prepare">
+        <input type="text" id="alias" />
+        <button id="connect" type="submit">Connect</button> 
+    </div>
 <pre id="ascii"></pre><br>
 <pre id="fps" style="display: none">BRITE [+/-] 0.45 ............. [P]AUSE .. [h]oriz ....................... 63 FPS</pre>
-<p id="role"></p>
+
 </div>
 <canvas id='cam-canvas' width="80" height="32"></canvas>
 <video id='cam-video' autoplay="autoplay" playsinline="true"></video>
@@ -89,9 +93,20 @@ var role = '{{ role }}';
 
 var pre, video, canvas, fps, W, H, start;
 
+var alias;
+
 function $$(s) { return document.querySelector(s) }
 
 $(function() {
+    
+    $('#connect').click(connect);
+
+});
+
+function connect() {
+    
+    alias = $('#alias').val();
+    $('#prepare').hide(500);
     
      pre = $$('#ascii');
      video = $$('video');
@@ -106,8 +121,7 @@ $(function() {
     W = canvas.width;
     H = canvas.height;
     start = +new Date();
-
-});
+}
 
 function info(data) {
     console.log(JSON.stringify(data));
@@ -167,16 +181,25 @@ function tick() {
   comp = LZW.compress(comp);
   comp = JSON.stringify(comp);
   
-    $.post( "/send/", { 'd' : comp, 'r' : role } )
+    $.post( "/send/", { 'd' : comp, 'a' : alias } )
       .done(function( data ) {
 
-        if (data == null || data.d == null) {
+        if (data == null) {
             console.log('empty');
             return;
         }
-        data = LZW.decompress( JSON.parse(data.d));
         // console.log(data);
-        pre.innerHTML = data;
+        for (var key in data) {
+            // console.log(key);
+            d = data[key];
+            d = JSON.parse(d);
+            d = LZW.decompress(d);
+            pre.innerHTML = d;
+        }
+        // console.log(data);
+        // data = LZW.decompress( JSON.parse(data.d));
+        // console.log(data);
+        // pre.innerHTML = data;
       });
   
   // console.log(comp);
