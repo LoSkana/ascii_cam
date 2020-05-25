@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<title>ASCIIcam</title>
+<title></title>
 <style>
 * { font: 14px monospace; }
 body { width: 100%; }
@@ -12,54 +12,11 @@ video, canvas { display: none; }
   width: 100%;
   text-align: center;
 }
-#ascii, #fps {
+#outer pre {
+  margin: 2em;
   display: inline-block;
-  margin: 0 auto;
-  padding: 0;
-}
-#title {
-  text-align: center;
-}
-a, a:visited {
-  position: absolute:
-  display: block;
-  color: #77b;
-  text-decoration: none;
-}
-a:hover {
-  color: blue;
 }
 </style>
-<script id="title" type="ascii-art">
-  ___  ________________   _  _  __________  ________  __  ____
-  /   |/  __/  __/  /  /\ | |/ |/ /  __/ , \/  __/   \/  |/   /\
- / ^  /__  /  /_/  /  / / |      /  __/ ,  /  /_/ ^  /       / /
-/_/|_/____/____/__/__/ /  |__/__/____/____/____/_/|_/__/_/__/ /
-\_\\_\____\____\__\__\/   \__\\__\____\___\____\_\\_\__\_\__\/
-
-</script>
-<script id="title" type="ascii-art">
-Brite &plusmn; _ Tint &#x25cb; _ Horiz &#x25cb; _ Freeze &#x25cb;
-</script>
-<script id="skzzt" type="ascii-art">
-...FFFFthhhhhh...SKZZZTssTKHHHKHHhhh...hhhSHHHHHHHhhhhFFFFfff...
-
-Attempting to establish video downlink...
-Click the 'Allow' button up above.
-</script>
-<script id="nocamera" type="ascii-art">
-KER-BLOOIE!
-
-Couldn't grab the camera feed; not sure why not.
-
-The error message I got was:
-</script>
-<script id="nosupport" type="ascii-art">
-KER-POW!
-
-It seems your browser doesn't support webcam video capture.
-Try Google Chrome, perhaps.
-</script>
 </head>
 <body>
 
@@ -68,8 +25,6 @@ Try Google Chrome, perhaps.
         <input type="text" id="alias" />
         <button id="connect" type="submit">Connect</button> 
     </div>
-
-<pre id="fps" style="display: none">BRITE [+/-] 0.45 ............. [P]AUSE .. [h]oriz ....................... 63 FPS</pre>
 
 </div>
 <canvas id='cam-canvas' width="80" height="32"></canvas>
@@ -91,7 +46,7 @@ var MESSAGE;
 
 var role = '{{ role }}';
 
-var pre, video, canvas, fps, W, H, start;
+var pre, video, canvas, W, H, start;
 
 var alias;
 
@@ -111,7 +66,6 @@ function connect() {
      pre = $$('#ascii');
      video = $$('video');
      canvas = $$('canvas');
-     fps = $$('#fps');
      
      $('#role').text(role);
     
@@ -167,16 +121,6 @@ function tick() {
   var end = +new Date();
   var elapsed = end - start;
   start = end;
-
-  var f = Array(2).join('0') + Math.round(1000/elapsed) + ' FPS';
-  f = f.substr(f.length - 6);
-  var g = 'BRITE [+/-] ' + GAMMA.toFixed(2) + ' ' + Array(57).join('.') + ' ' + f;
-  if (video.videoWidth) {
-    var controls = video.paused ? '[p]ause' : '[P]AUSE';
-    controls += ' .. ' + (HREVERSE ? '[h]oriz' : '[H]ORIZ');
-    g = embedstr(g, controls, ' ');
-  }
-  fps.innerHTML = g;
   
   comp = ctx;  
   comp = LZW.compress(comp);
@@ -199,30 +143,29 @@ function tick() {
             return;
         }
         
-        
         // console.log(data);
         for (var key in data) {
-            console.log(key);
-            d = data[key];
-            d = JSON.parse(d);
-            d = LZW.decompress(d);
+           //  console.log(key);
+            cnt = data[key];
+            cnt = JSON.parse(cnt);
+            cnt = LZW.decompress(cnt);
             
             if (key in dict) 
                 d = dict[key];
             else 
-                d = {};
+                d = {'el': null};
                 
                 k = "pre-" + key;
                 
-            if (!(el in dict) || d['active'] == false) {
+            if (d['el'] === null|| d['active'] == false) {
                 var el = $("<pre id='" + k + "'></pre>");
                 $("#outer").append(el);
                 d['el'] = el;
             }
             
             var pre = d['el'];
-            // console.log(pre.length);            
-            pre.html(d);
+            // console.log(pre);            
+            pre.html(cnt);
             
             d['active'] = true;
             d['last'] = now;
@@ -230,7 +173,12 @@ function tick() {
         }
         
         for (var key in dict) {
-            if (now - dict['last'] > 1000) console(key);
+            var d = dict[key];
+            if (!(d['active'])) continue;
+            if (now - d['last'] < 300) continue;
+            d['active'] = false;
+            d['el'].remove();
+            d['el'] = null;
         }
         
         // console.log(data);
