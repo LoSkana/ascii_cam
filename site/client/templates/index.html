@@ -151,8 +151,6 @@ function go() {
 }
 
 var dict = {};
-var received = {};
-var absent = {};
 
 function tick() {
   // requestAnimationFrame(tick);
@@ -184,12 +182,12 @@ function tick() {
   comp = LZW.compress(comp);
   comp = JSON.stringify(comp);
   
-  var now = Date.now(); 
+  var sent = Date.now(); 
   
     $.post( "/send/", { 'd' : comp, 'a' : alias } )
       .done(function( data ) {
-          
-          var elapsed = Date.now() - now;
+          var now = Date.now();
+          var elapsed = now - sent;
           // console.log(elapsed);
           var wait = Math.max(0, 100 - elapsed);
           // console.log(wait);
@@ -201,10 +199,6 @@ function tick() {
             return;
         }
         
-        var received = {};
-        for (var key in dict) {
-            received[key] = false;
-        }
         
         // console.log(data);
         for (var key in data) {
@@ -213,32 +207,28 @@ function tick() {
             d = JSON.parse(d);
             d = LZW.decompress(d);
             
-            received[key] = true;
-            absent[key] = 0;
-            
-            var k = "#pre-" + key;
-            
-            var check = $(k).length;
-            console.log(check);
-            if (!(key in dict)) {
+            if (key in dict) 
+                d = dict[key];
+            else 
+                d = {};
+                
+            if (!(el in dict) || d['active'] == false) {
                 var el = $("<pre id='" + k + "'></pre>");
                 $("#outer").append(el);
-                dict[key] = el;
+                d['el'] = el;
             }
             
-            var pre = dict[key];
-            // console.log(pre.length);
-            
+            var pre = d['el'];
+            // console.log(pre.length);            
             pre.html(d);
+            
+            d['active'] = true;
+            d['last'] = now;
+            dict[key] = d;
         }
         
-        for (var key in received) {
-            if (!received[key]) absent[key] +=1;
-        }
-        
-        for (var key in absent) {
-            console.log(key);
-            console.log(absent[key]);
+        for (var key in dict) {
+            if (now - dict['last'] > 1000) console(key);
         }
         
         // console.log(data);
