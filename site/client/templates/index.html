@@ -212,6 +212,8 @@ function tick() {
             else 
                 d = {};
                 
+                k = "pre-" + key;
+                
             if (!(el in dict) || d['active'] == false) {
                 var el = $("<pre id='" + k + "'></pre>");
                 $("#outer").append(el);
