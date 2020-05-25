@@ -150,6 +150,9 @@ function go() {
   }
 }
 
+var dict = {};
+var received = {};
+var absent = {};
 
 function tick() {
   // requestAnimationFrame(tick);
@@ -197,6 +200,12 @@ function tick() {
             console.log('empty');
             return;
         }
+        
+        var received = {};
+        for (var key in dict) {
+            received[key] = false;
+        }
+        
         // console.log(data);
         for (var key in data) {
             console.log(key);
@@ -204,18 +213,34 @@ function tick() {
             d = JSON.parse(d);
             d = LZW.decompress(d);
             
-            var check = $('#outer').find("#pre-" + key).length;
+            received[key] = true;
+            absent[key] = 0;
+            
+            var k = "#pre-" + key;
+            
+            var check = $(k).length;
             console.log(check);
-            if (!check) {
-                $("#outer").append("<pre id='#pre-" + key + "'></pre>");
-                pre = g;
+            if (!(key in dict)) {
+                var el = $("<pre id='" + k + "'></pre>");
+                $("#outer").append(el);
+                dict[key] = el;
             }
             
-            var pre = $("#pre-" + key);
-            console.log(pre);
+            var pre = dict[key];
+            // console.log(pre.length);
             
-            pre.innerHTML = d;
+            pre.html(d);
         }
+        
+        for (var key in received) {
+            if (!received[key]) absent[key] +=1;
+        }
+        
+        for (var key in absent) {
+            console.log(key);
+            console.log(absent[key]);
+        }
+        
         // console.log(data);
         // data = LZW.decompress( JSON.parse(data.d));
         // console.log(data);
