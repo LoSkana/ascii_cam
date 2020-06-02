@@ -44,11 +44,11 @@ var GAMMA = 0.45;
 var HREVERSE = true;
 var MESSAGE;  
 
-var role = '{{ role }}';
+var alias = '{{ alias }}';
 
 var pre, video, canvas, W, H, start;
 
-var alias;
+var room;
 
 function $$(s) { return document.querySelector(s) }
 
@@ -60,14 +60,14 @@ $(function() {
 
 function connect() {
     
-    alias = $('#alias').val();
+    room = $('#room').val();
     $('#prepare').hide(500);
     
      pre = $$('#ascii');
      video = $$('video');
      canvas = $$('canvas');
      
-     $('#role').text(role);
+     $('#alias').text(alias);
     
     go();
     requestAnimationFrame(tick);
@@ -128,7 +128,7 @@ function tick() {
   
   var sent = Date.now(); 
   
-    $.post( "/send/", { 'd' : comp, 'a' : alias } )
+    $.post( "/send/", { 'd' : comp, 'a' : alias, 'r': room } )
       .done(function( data ) {
           var now = Date.now();
           var elapsed = now - sent;
