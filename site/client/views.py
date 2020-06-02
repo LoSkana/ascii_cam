@@ -45,8 +45,8 @@ def send(request):
     # get other webcams frame
     for o_a in o_dic.keys(): 
         if alias == o_a:
-            pass
-            #continue
+            #pass
+            continue
         last_seen = int(cache.get('l-' + o_a))
         if timestamp - last_seen > 3:
             dic.pop(o_a, None)
