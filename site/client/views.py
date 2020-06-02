@@ -55,7 +55,7 @@ def send(request):
         dic[o_a] = 1
         res[o_a] = cache.get('c-' + o_a)
     
-    dic[a] = 1
+    dic[alias] = 1
     cache.set('r-' + room, dic)
 
     return JsonResponse(res)
